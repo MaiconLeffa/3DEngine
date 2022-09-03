@@ -6,11 +6,12 @@ import compare from "./compare"
 export default (polygons, screenWidth, screenHeight) => {
   const zBufferPolygons = []
 
-  for (const box of polygons) {
+  for (let i = 0; i < polygons.length; i++) {
+    const box = polygons[i]
+    if (!box.visible) continue
+
     for (let x = 0; x < screenWidth; x++) {
       for (let y = 0; y < screenHeight; y++) {
-
-        if (!box.visible) continue
 
         const v1x = box.coordinates[0][0]
         const v1y = box.coordinates[0][1]

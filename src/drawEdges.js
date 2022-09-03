@@ -1,21 +1,16 @@
-import colorFace from "./colorFace"
-import getPolygons from "./getPolygons"
-import renderPixel from "./renderPixel"
-import vectorNormal from "./vectorNormal"
+import getPolygons from "./polygons/getPolygons"
+import compare from "./zBuffer/compare"
 import prepare from "./zBuffer/prepare"
 
-const translateZ = 0
-
 export default (vertices, edges, ctx, size, translateX, translateY, mouseX, mouseY) => {
-  const polygons = getPolygons(edges, vertices, size, translateX, translateY, translateZ)
 
-  function compare(a, b, c) {
-    const test = (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
-    return test
-  }
+  const polygons = getPolygons(edges, vertices, size, translateX, translateY)
+  const screenHeight = 100
+  const screenWidth = 150
+  const pixelsArray = new Uint8ClampedArray((screenHeight * screenWidth) * 4)
 
   //parte que determina se mouse ta em cima do poligono
-  for (let k = 0; k < polygons.length - 1; k++) {
+  /*for (let k = 0; k < polygons.length - 1; k++) {
     if (polygons[k].visible) {
       const v1x = polygons[k].coordinates[0][0]
       const v1y = polygons[k].coordinates[0][1]
@@ -46,37 +41,28 @@ export default (vertices, edges, ctx, size, translateX, translateY, mouseX, mous
         polygons[k].color = 'rgba(0,0,255)'
       }
     }
-  }
+  }*/
 
-  const screenHeight = 150
-  const screenWidth = 150
-  const pixelsArray = new Uint8ClampedArray((screenHeight * screenWidth) * 4);
   const colorBuffer = prepare(polygons, screenWidth, screenHeight)
+  const arr = Object.keys(colorBuffer)
 
-  for (let i = 0; i < pixelsArray.length; i += 4) {
-    const x = (i / 4) % screenWidth;
-    const y = Math.floor((i / 4) / screenWidth);
+  for (let i = 0; i < arr.length; i++) {
+    const xy = arr[i]
+    const _xy = xy.split('_')
+    const x = parseInt(_xy[0])
+    const y = parseInt(_xy[1])
 
-    if (colorBuffer[`${x}_${y}`]) {
-      let color = colorBuffer[`${x}_${y}`].color
-      if (color) {
-        color = color.replace(/[^\d,]/g, '').split(',');
-        pixelsArray[i + 0] = parseInt(color[0])    // R value
-        pixelsArray[i + 1] = parseInt(color[1])  // G value
-        pixelsArray[i + 2] = parseInt(color[2])    // B value
-        pixelsArray[i + 3] = 255;  // A value
-      }
-    } else { //cor do fundo
-      pixelsArray[i + 0] = 255;    // R value
-      pixelsArray[i + 1] = 255;  // G value
-      pixelsArray[i + 2] = 0;    // B value
-      pixelsArray[i + 3] = 255;  // A value
-    }
+    const index = (x + (y * screenWidth)) * 4
+
+    const color = colorBuffer[xy].color.replace(/[^\d,]/g, '').split(',')
+    pixelsArray[index + 0] = parseInt(color[0])
+    pixelsArray[index + 1] = parseInt(color[1])
+    pixelsArray[index + 2] = parseInt(color[2])
+    pixelsArray[index + 3] = 255;
   }
 
   const imageData = new ImageData(pixelsArray, screenWidth);
   ctx.putImageData(imageData, 0, 0);
-
 
   //INICIA A MONTAGEM DE TODAS AS FACES
   /*for (let i = 0; i < polygons.length - 1; i++) {
@@ -87,9 +73,8 @@ export default (vertices, edges, ctx, size, translateX, translateY, mouseX, mous
       ctx.lineTo(polygons[i].coordinates[2][0], polygons[i].coordinates[2][1])
 
       if (polygons[i].coordinates[3]) ctx.lineTo(polygons[i].coordinates[3][0], polygons[i].coordinates[3][1])
-
+      
       ctx.fillStyle = polygons[i].color
-
       ctx.closePath()
       //ctx.fill()
       ctx.lineWidth = .1

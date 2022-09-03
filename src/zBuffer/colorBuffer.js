@@ -7,22 +7,26 @@ function zBufferGrayScale(percent) {
 
 // determina a cor de cada pixel
 export default (zBufferPolygons, grayScale) => {
-  Object.keys(zBufferPolygons).forEach(xy => {
 
+  const arr = Object.keys(zBufferPolygons)
+
+  for (let i = 0; i < arr.length; i++) {
+    const xy = arr[i]
     let z = Infinity
     let color = null
 
-    zBufferPolygons[xy].forEach(polygon => {
+    for (let j = 0; j < zBufferPolygons[xy].length; j++) {
+      const polygon = zBufferPolygons[xy][j]
       if (polygon.visible) {
-        polygon.coordinates.forEach(coordinate => {
-          const zCoordinate = coordinate[2]
+        for (let u = 0; u < polygon.coordinates.length; u++) {
+          const zCoordinate = polygon.coordinates[u][2]
           if (zCoordinate <= z) {
             z = zCoordinate
             color = polygon.color
           }
-        })
+        }
       }
-    })
+    }
 
     if (grayScale) { //Caso queira ver o zdepth em cor
       const perc = (z * 100) / (-80 - 2)
@@ -31,7 +35,7 @@ export default (zBufferPolygons, grayScale) => {
       zBufferPolygons[xy].color = color || 'rgba(255,0,0)'
     }
 
-  })
+  }
 
   return zBufferPolygons
 }

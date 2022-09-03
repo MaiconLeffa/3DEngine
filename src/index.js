@@ -1,8 +1,9 @@
 import drawEdges from "./drawEdges"
-import readObjFile from "./readObjFile"
+import readObjFile from "./objFile/readObjFile"
 import rotateX from "./rotateX"
 import rotateY from "./rotateY"
 import rotateZ from "./rotateZ"
+import drawVertices from './drawVertices'
 
 function _terminal() {
   const p = document.createElement('p')
@@ -40,10 +41,10 @@ document.body.appendChild(Canva)
 const coordinates = readObjFile()
 let vertices = coordinates[0]
 let edges = coordinates[1]
-const size = -50
+const size = -0.1
 let X = 80
-const Y = 70
-const rotatingX = true
+const Y = 120
+const rotatingX = false
 const rotatingY = true
 const rotatingZ = false
 
@@ -59,7 +60,6 @@ Canva.addEventListener('mousedown', function (e) {
   initX = e.clientX
   terminal.innerHTML = (0).toString()
   initTranslateX = X
-  //X = (e.clientX - initX)
   isMoving = true
 })
 
@@ -77,12 +77,11 @@ window.addEventListener('mousemove', function (e) {
 
 function step() {
   ctx.clearRect(0, 0, Canva.width, Canva.height)
-  //if (rotatingX) rotateX(vertices, 0.01)
+  if (rotatingX) rotateX(vertices, 0.01)
   if (rotatingY) rotateY(vertices, 0.05)
-  //if (rotatingZ) rotateZ(vertices, 0.03)
+  if (rotatingZ) rotateZ(vertices, 0.03)
   render()
   window.requestAnimationFrame(step)
 }
-//rotateY(vertices, 0.5)
-//step()
+
 window.requestAnimationFrame(step)
